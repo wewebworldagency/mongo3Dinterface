@@ -1,0 +1,281 @@
+<div data-ng-controller="MeanSocketController">
+	<!--<tabset>
+		<tab heading="Base de données">
+			<h3>Interface MongoDB :</h1>
+			<div class="btn btn-info" data-ng-click="getAllDatabases()">Récupérer les bdd</div>
+
+			<div class="span3 bs-docs-sidebar" style="float:left;">
+				<ul class="nav nav-list bs-docs-sidenav affix">
+					<li class="" data-ng-repeat="bdd in bdds" data-ng-click="getBddTableByName(bdd.bdd.name)"><a>Nom de la BDD : {{bdd.bdd.name}} | Vide : {{bdd.bdd.empty}}</a>
+					<i class="icon-chevron-right"></i></li>
+				</ul>
+			</div>
+			<div class="greyside col-md-8 col-lg-4 example-block" style="float:right;">
+				<ul class="nav nav-list bs-docs-sidenav affix">
+					<li class="" data-ng-repeat="table in tables" data-ng-click=""><a>Nom de la Table : {{table.table.name}}</a>
+					<i class="icon-chevron-right"></i></li>
+				</ul>
+			</div>
+		</tab>
+
+		<tab heading="Messagerie">
+			<div class="col-md-4 col-lg-8 example-block alt">
+
+				<use-socket after-join="socketAfterJoin(channel, messages)" socket-after-get="socketAfterGet(message)" socket-after-get-all-channels="socketAfterGetChannels(channels)" join-to-channel="activeChannel"/>
+
+				<input type="text" data-ng-model="$parent.newChannel" placeholder="type here new channel"/> 
+				<div class="btn btn-info" data-ng-click="createNewChannel(newChannel)">save</div>
+
+
+				<div class="span3 bs-docs-sidebar">
+					<ul class="nav nav-list bs-docs-sidenav affix">
+						<li class="" data-ng-repeat="channel in channels" data-ng-click="createNewChannel(channel)"><a>{{channel}}</a>
+						<i class="icon-chevron-right"></i></li>
+					</ul>
+				</div>
+
+			</div>
+
+  			<div class="greyside col-md-8 col-lg-4 example-block">
+				<a ui-sref="Mean socket help page" target="_blank">Open a new window</a>
+
+				<h2>{{activeChannel}}</h2>
+				<div data-ng-repeat="message in messages track by $index">
+					<strong>{{message.user.name}}</strong> ({{message.created | date:'medium'}})
+					{{message.content}}
+				</div>
+
+				<input type="text" data-ng-model="$parent.message.title"/>
+
+				<div socket message="{'content':$parent.message.title}" after-send="socketAfterSend(message)"></div>
+			</div>
+
+
+		</tab>
+
+	</tabset>-->
+
+	<div class="row dashboard" data-ng-show="showSelector">
+        <div class="col-sm-3 col-md-2 sidebar">
+         <!-- <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+          <ul class="nav nav-list bs-docs-sidenav affix">-->
+          <ul class="nav nav-sidebar">
+            <li class="" data-ng-repeat="bdd in bdds" data-ng-click="getBddTableByName(bdd.bdd.name)"><a>{{bdd.bdd.name}} <span style="font-size:10px;"> | Vide : {{bdd.bdd.empty}}</span></a>
+              
+            <i class="icon-chevron-right"></i></li>
+          </ul>
+          <button type="button" class="btn btn-default btn-lg" data-ng-click="showVisualisation3D()">
+                <span class="glyphicon glyphicon-eye-open"></span> Visualiser en 3D
+          </button>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Dashboard</h1>
+
+
+          <div class="greyside col-md-8 col-lg-2 example-block">
+          <!--<ul class="nav nav-list bs-docs-sidenav affix">-->
+          <ul class="nav nav-pills nav-stacked">
+            <li class="" data-ng-repeat="table in tables" data-ng-click="getAllDataByTable(table.table.name, nameBddCurrent)"><a>{{table.table.name}}</a>
+            <i class="icon-chevron-right"></i></li>
+          </ul>
+        </div>
+
+          <div class="">
+          <!--<ul class="nav nav-list bs-docs-sidenav affix">-->
+          <!--<ul class="nav nav-pills nav-stacked">
+
+            <li class="" data-ng-repeat="data in datas" data-ng-click="getAllDataByTable(data.data.name)"><a>{{data.name}}{{data['_id']}}</a>
+            <i class="icon-chevron-right"></i></li>
+
+
+          </ul>-->
+
+
+           <div class="table-responsive col-lg-10" data-ng-show="showDataTable">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th data-ng-repeat="headerData in headerDocs">{{headerData}}</th>
+                </tr>
+              </thead>
+              <tbody data-ng-repeat="data in datas">
+                <tr>
+                  <td data-ng-repeat="headerData in headerDocs">{{data[headerData]}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+
+
+        </div>
+
+          <!--<div class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <img data-src="holder.js/200x200/auto/sky" class="img-responsive" alt="200x200" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzBEOEZEQiIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwMCIgeT0iMTAwIiBzdHlsZT0iZmlsbDojZmZmO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEzcHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L3N2Zz4=">
+              <h4>Label</h4>
+              <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <img data-src="holder.js/200x200/auto/vine" class="img-responsive" alt="200x200" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzM5REJBQyIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwMCIgeT0iMTAwIiBzdHlsZT0iZmlsbDojMUUyOTJDO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEzcHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L3N2Zz4=">
+              <h4>Label</h4>
+              <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <img data-src="holder.js/200x200/auto/sky" class="img-responsive" alt="200x200" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzBEOEZEQiIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwMCIgeT0iMTAwIiBzdHlsZT0iZmlsbDojZmZmO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEzcHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L3N2Zz4=">
+              <h4>Label</h4>
+              <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <img data-src="holder.js/200x200/auto/vine" class="img-responsive" alt="200x200" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzM5REJBQyIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwMCIgeT0iMTAwIiBzdHlsZT0iZmlsbDojMUUyOTJDO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEzcHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L3N2Zz4=">
+              <h4>Label</h4>
+              <span class="text-muted">Something else</span>
+            </div>
+          </div>
+
+          <h2 class="sub-header">Section title</h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Header</th>
+                  <th>Header</th>
+                  <th>Header</th>
+                  <th>Header</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1,001</td>
+                  <td>Lorem</td>
+                  <td>ipsum</td>
+                  <td>dolor</td>
+                  <td>sit</td>
+                </tr>
+                <tr>
+                  <td>1,002</td>
+                  <td>amet</td>
+                  <td>consectetur</td>
+                  <td>adipiscing</td>
+                  <td>elit</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>Integer</td>
+                  <td>nec</td>
+                  <td>odio</td>
+                  <td>Praesent</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>libero</td>
+                  <td>Sed</td>
+                  <td>cursus</td>
+                  <td>ante</td>
+                </tr>
+                <tr>
+                  <td>1,004</td>
+                  <td>dapibus</td>
+                  <td>diam</td>
+                  <td>Sed</td>
+                  <td>nisi</td>
+                </tr>
+                <tr>
+                  <td>1,005</td>
+                  <td>Nulla</td>
+                  <td>quis</td>
+                  <td>sem</td>
+                  <td>at</td>
+                </tr>
+                <tr>
+                  <td>1,006</td>
+                  <td>nibh</td>
+                  <td>elementum</td>
+                  <td>imperdiet</td>
+                  <td>Duis</td>
+                </tr>
+                <tr>
+                  <td>1,007</td>
+                  <td>sagittis</td>
+                  <td>ipsum</td>
+                  <td>Praesent</td>
+                  <td>mauris</td>
+                </tr>
+                <tr>
+                  <td>1,008</td>
+                  <td>Fusce</td>
+                  <td>nec</td>
+                  <td>tellus</td>
+                  <td>sed</td>
+                </tr>
+                <tr>
+                  <td>1,009</td>
+                  <td>augue</td>
+                  <td>semper</td>
+                  <td>porta</td>
+                  <td>Mauris</td>
+                </tr>
+                <tr>
+                  <td>1,010</td>
+                  <td>massa</td>
+                  <td>Vestibulum</td>
+                  <td>lacinia</td>
+                  <td>arcu</td>
+                </tr>
+                <tr>
+                  <td>1,011</td>
+                  <td>eget</td>
+                  <td>nulla</td>
+                  <td>Class</td>
+                  <td>aptent</td>
+                </tr>
+                <tr>
+                  <td>1,012</td>
+                  <td>taciti</td>
+                  <td>sociosqu</td>
+                  <td>ad</td>
+                  <td>litora</td>
+                </tr>
+                <tr>
+                  <td>1,013</td>
+                  <td>torquent</td>
+                  <td>per</td>
+                  <td>conubia</td>
+                  <td>nostra</td>
+                </tr>
+                <tr>
+                  <td>1,014</td>
+                  <td>per</td>
+                  <td>inceptos</td>
+                  <td>himenaeos</td>
+                  <td>Curabitur</td>
+                </tr>
+                <tr>
+                  <td>1,015</td>
+                  <td>sodales</td>
+                  <td>ligula</td>
+                  <td>in</td>
+                  <td>libero</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>-->
+        </div>
+
+       
+
+      </div>
+       <!--<div data-ng-hide="showSelector" ng-include src="'socket/views/visualisation3D.html'">
+          
+          
+      </div>-->
+</div>
+ <div data-ng-hide="showSelector" ng-include src="'socket/views/visualisation3D.html'">
+          
+          
+      </div>

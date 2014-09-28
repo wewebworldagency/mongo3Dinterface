@@ -1,0 +1,26 @@
+<section data-ng-controller="IndexController">
+  
+
+        <div class="cover-container" data-ng-hide="global.authenticated">
+
+          <div class="inner cover">
+            <h1 class="cover-heading">Interface Mongo 3D</h1>
+            <p class="lead">Afin d'utiliser cette interface, veuillez vous connecter à l'aide de votre login et mot de passe qui vous ont été attribué.</p>
+            <p class="lead">
+              <a ui-sref='auth.login' class="btn btn-lg btn-default">Se connecter</a>
+            </p>
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>Interface créé par <a href="http://wewebworld.fr">We Web World</a>.</p>
+            </div>
+          </div>
+        </div>
+        
+
+        <div data-ng-show="global.authenticated">
+
+        </div>
+
+</section>

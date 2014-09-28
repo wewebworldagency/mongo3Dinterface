@@ -1,0 +1,542 @@
+<div class="row dashboard">
+    <div class="col-sm-3 col-md-2 sidebar">
+		
+
+		<div class="col-sm-3 col-md-2 sidebar">
+         <!-- <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+          <ul class="nav nav-list bs-docs-sidenav affix">-->
+          	<h1 class="page-header">Visualisation 3D</h1>
+          <button type="button" class="btn btn-default btn-lg" data-ng-click="showVisualisationNormal()">
+                <span class="glyphicon glyphicon-eye-close"></span> Revenir à l'affichage normal
+          </button>
+        </div>
+
+	</div>
+
+	<div id="container"></div>
+		<div id="menu">
+			<button id="base">TABLE</button>
+			<button id="sphere">SPHERE</button>
+			<button id="helix">HELIX</button>
+			<button id="grid">GRID</button>
+		</div>
+		
+		<div id="arrowBackBase" class="bdd transition200">BDD</div>
+		<script>
+			var objects = [];
+			var projector;
+			var mouse = new THREE.Vector2(),
+			offset = new THREE.Vector3(),
+			INTERSECTED, SELECTED;
+			//console.log(bases);
+			/*var bases = [
+				"wewebworld", "NB tables : 5", "NB lignes : 20", 2, 1,
+				"clemencechazal", "NB tables : 13", "NB lignes : 35", 2, 2,
+				"letrucrouge", "NB tables : 10", "NB lignes : 56", 2, 3,
+				"safetyobserver", "NB tables : 4", "NB lignes : 41", 3, 1,
+				"appli_instagram", "NB tables : 3", "NB lignes : 5", 3, 2,
+
+				"wewebworld", "NB tables : 5", "NB lignes : 20", 3, 3,
+				"clemencechazal", "NB tables : 13", "NB lignes : 35", 4, 1,
+				"letrucrouge", "NB tables : 10", "NB lignes : 56", 4, 2,
+				"safetyobserver", "NB tables : 4", "NB lignes : 41", 4, 3,
+			];*/
+
+
+			var tables = [
+
+				"www_customer", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 20", 2, 1,
+				"www_connexion", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 35", 2, 2,
+				"www_address", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 56", 2, 3,
+				"www_message", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 41", 2, 4,
+
+				"www_customer", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 20", 3, 1,
+				"www_connexion", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 35", 3, 2,
+				"www_address", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 56", 3, 3,
+				"www_message", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 41", 3, 4,
+				
+				"www_customer", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 20", 4, 1,
+				"www_connexion", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 45", 4, 2,
+				"www_address", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 56", 4, 3,
+				"www_message", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 41", 4, 4,
+
+
+				"www_customer", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 20", 5, 1,
+				"www_connexion", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 45", 5, 2,
+				"www_address", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 56", 5, 3,
+				"www_message", [["id", "name", "email", "age"],["id", "name", "email", "age"],["id", "name", "email", "age"]], "NB lignes : 41", 5, 4,
+			];
+
+			var camera, scene, renderer;
+			var controls;
+
+			var objectsIntersected = [];
+			var targets = { base: [], table: [], sphere: [], helix: [], grid: [] };
+
+			//init(bases, 'bases');
+			//animate();
+			var tableChoose;
+			var closeTable;
+			var allData;
+			$('#arrowBackBase').click(function(){
+				if($(this).hasClass('bdd'))
+				{
+					removeAllEntity();
+					init(allData, 'bases');
+					animate();
+					$('#arrowBackBase').fadeOut(200);
+				}
+				else
+				{
+					//console.log(tableChoose);
+					$(closeTable).trigger('click');
+				}
+			});
+
+			function init(data, name) {
+				
+				//trie tableau
+				
+				if(name == "bases")
+				{
+					allData = data;
+					var base =[];
+				    //var tables = [];
+				    var cmpt = 1;
+				    var cmpt2 = 1;
+				    for(var i = 0; i < data.bdd.length; i++){
+				    	for(var j = 0; j< data.table.length; j++){
+				    		var string = data.table[j];
+				    		var split = string.split('.');
+				    		var nameBdd='';
+				    		var nameTable='';
+				    		for(var z = 0; z < split.length; z++){
+								 if(z == 0)
+						            nameBdd = split[z];
+						        else if(z==1)
+						             nameTable=split[z];
+						        else
+						            nameTable+='.'+split[z];
+							}
+				    		if(nameBdd==data.bdd[i]){
+				    			//tables[nameBdd] = [];
+				    			//tables[nameBdd].push(nameTable);
+				    		}
+				    	}
+
+				    	base.push(data.bdd[i]);
+				    	base.push('NB Tables :');
+				    	base.push('allTables');
+				    	base.push(cmpt+1);
+				    	base.push(cmpt2);
+				    	cmpt2++;
+				    	if(cmpt2%3 == 1)
+				    	{
+				    		cmpt2 = 1;
+				    		cmpt++;
+				    	}
+				    }
+				}
+				else
+					base = data;		
+			    
+
+				var targets = { base: [], table: [], sphere: [], helix: [], grid: [] };
+				for(var i = 0; i < data.length; i++)
+				{
+					//var allTables = getBddTableByName(data[i].bdd.name);
+					//console.log(data[i].bdd.name);
+				}
+				objects = [];
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 4000;
+
+				scene = new THREE.Scene();
+
+				projector = new THREE.Projector();
+
+				// base
+
+				var geometry = new THREE.BufferGeometry();
+				var material = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors });
+
+				for ( var i = 0; i < base.length; i += 5) {
+
+					var element = document.createElement( 'div' );
+					element.className = 'element element_'+i/5;
+					//element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+					if(name =='tables') element.style.backgroundColor = 'rgba(0,127,127,0.7)';
+					else element.style.backgroundColor = 'rgba(79, 128, 112,0.7)';
+
+
+					var number = document.createElement( 'div' );
+					number.className = 'number';
+					number.textContent = (i/5) + 1;
+					element.appendChild( number );
+
+					
+					if(name =='tables')
+					{
+						var symbol = document.createElement( 'div' );
+						symbol.className = 'symbol';
+						symbol.innerHTML = '<span class="titleElem">Table</span><br>'+base[ i ];
+						element.appendChild( symbol );
+
+						var colonnes = document.createElement( 'div' );
+						colonnes.className = 'colonnes';
+						var fullText = '<div class="CSSTableGenerator"><table>';
+						for(var j = 0; j < base[ i + 1 ].length; j++)
+						{
+							fullText +='<tr>';
+							for(var z = 0; z < base[ i + 1 ][j].length; z++)
+							{	
+								//console.log(base[ i + 1 ][j][z]);
+								if(base[ i + 1 ][j][z] != null)
+									fullText += '<td>'+base[ i + 1 ][j][z] + '</td>';
+							}
+							fullText +='</tr>';
+						}
+						fullText +='</table></div>';
+						colonnes.innerHTML = fullText;
+						element.appendChild( colonnes );
+
+						var details = document.createElement( 'div' );
+						details.className = 'details';
+						var fullText = "";
+						fullText += base[ i + 2 ] + '<br>';
+						details.innerHTML = fullText;
+						element.appendChild( details );
+
+						$('#arrowBackBase').fadeIn(200);
+					}
+					else
+					{
+						var symbol = document.createElement( 'div' );
+						symbol.className = 'symbol';
+						symbol.innerHTML = '<span class="titleElem">BDD</span><br>'+base[ i ];
+						element.appendChild( symbol );
+
+						var details = document.createElement( 'div' );
+						details.className = 'details';
+						details.innerHTML = base[ i + 1 ] + '<br>' + base[ i + 2 ];
+						element.appendChild( details );
+					}
+
+					var close = document.createElement( 'div' );
+					close.className = 'close';
+					close.innerHTML = 'X';
+					element.appendChild( close );
+
+					var numObject = document.createElement( 'div' );
+					numObject.className = 'numObject';
+					numObject.innerHTML = i/5;
+					element.appendChild( numObject );
+					
+					if(name == 'bases')
+					{
+						element.addEventListener( 'click', function ( event ) {
+							removeAllEntity();
+							init(tables, 'tables');
+							animate();
+						}, false );
+					}
+					else
+					{
+						element.addEventListener( 'click', function ( event ) {
+							var numObj = $(this).find('.numObject').text();
+							tableChoose = numObject;
+							closeTable = $(this).find('.close');
+							$('.element').each(function(){
+								if($(this).find('.numObject').text() != numObj)
+									$(this).fadeOut(200);
+							});
+							$(this).fadeIn(200);
+
+							$('#arrowBackBase').removeClass('bdd');
+							$('#arrowBackBase').addClass('table');
+							$('#arrowBackBase').text('Tables');
+
+							$(this).addClass('deploy');
+							transformViewBase(numObj, targets.base, 500);
+
+						}, false );
+
+						close.addEventListener( 'click', function ( event ) {
+							event.stopPropagation();
+							event.preventDefault();
+
+							$('#arrowBackBase').removeClass('table');
+							$('#arrowBackBase').addClass('bdd');
+							$('#arrowBackBase').text('BDD');
+
+							$(this).parent().removeClass('deploy');
+							$('.element').each(function(){
+								$(this).fadeIn(200);
+							});
+							transform(targets.base, 500 );
+						}, false );
+					}
+
+					var object = new THREE.CSS3DObject( element );
+					object.position.x = Math.random() * 4000 - 2000;
+					object.position.y = Math.random() * 4000 - 2000;
+					object.position.z = Math.random() * 4000 - 2000;
+					scene.add( object );
+
+				/*	var type = Math.random() > 0.5 ? THREE.LineStrip : THREE.LinePieces;
+					var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff } ), type );
+					
+					line.position.x = Math.random() * 400 - 200;
+					line.position.y = Math.random() * 400 - 200;
+					line.position.z = Math.random() * 400 - 200;
+
+					line.rotation.x = Math.random() * 2 * Math.PI;
+					line.rotation.y = Math.random() * 2 * Math.PI;
+					line.rotation.z = Math.random() * 2 * Math.PI;
+
+					line.scale.x = Math.random() + 0.5;
+					line.scale.y = Math.random() + 0.5;
+					line.scale.z = Math.random() + 0.5;
+					scene.add( line );*/
+
+					objects.push( object );
+
+					//
+
+					var object = new THREE.Object3D();
+					console.log(base[ i + 3 ]);
+					console.log(base[ i + 4 ]);
+					object.position.x = ( base[ i + 3 ] * 500 ) - 1330;
+
+					console.log(( base[ i + 3 ] * 500 ) - 1330);
+					object.position.y = - ( base[ i + 4 ] * 320 ) + 990;
+
+					console.log(- ( base[ i + 4 ] * 320 ) + 990);
+
+					targets.base.push( object );
+
+				}
+
+				// sphere
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var phi = Math.acos( -1 + ( 2 * i ) / l );
+					var theta = Math.sqrt( l * Math.PI ) * phi;
+
+					var object = new THREE.Object3D();
+
+					object.position.x = 1000 * Math.cos( theta ) * Math.sin( phi );
+					object.position.y = 1000 * Math.sin( theta ) * Math.sin( phi );
+					object.position.z = 1000 * Math.cos( phi );
+
+					vector.copy( object.position ).multiplyScalar( 2 );
+
+					object.lookAt( vector );
+
+					targets.sphere.push( object );
+				}
+
+				// helix
+
+				var vector = new THREE.Vector3();
+
+				for ( var i = 0, l = objects.length; i < l; i ++ ) {
+
+					var phi = i * 0.175 + Math.PI;
+
+					var object = new THREE.Object3D();
+
+					object.position.x = (3000 * Math.sin( phi ));
+					object.position.y = - ( i * 8 ) + 450;
+					object.position.z = 3000 * Math.cos( phi );
+
+					vector.x = object.position.x * 2;
+					vector.y = object.position.y;
+					vector.z = object.position.z * 2;
+
+					object.lookAt( vector );
+
+					targets.helix.push( object );
+				}
+
+				// grid
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = new THREE.Object3D();
+
+					object.position.x = ( ( i % 3 ) * 600 ) ;
+					object.position.y = ( - ( Math.floor( i/3 ) % 3 ) * 400 ) + 800;
+					object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 1000;
+
+					targets.grid.push( object );
+				}
+
+				//
+
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.style.position = 'absolute';
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 0.5;
+				controls.minDistance = 500;
+				controls.maxDistance = 6000;
+				controls.addEventListener( 'change', render );
+
+				var button = document.getElementById( 'base' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.base, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'sphere' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.sphere, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'helix' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.helix, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'grid' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.grid, 1000 );
+
+				}, false );
+
+				transform( targets.base, 500 );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+
+			}
+
+			function transform( targets, duration ) {
+
+				TWEEN.removeAll();
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = objects[ i ];
+					var target = targets[ i ];
+
+					new TWEEN.Tween( object.position )
+						.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+					new TWEEN.Tween( object.rotation )
+						.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+				}
+
+				new TWEEN.Tween( this )
+					.to( {}, duration * 2 )
+					.onUpdate( render )
+					.start();
+
+			}
+
+			function transformViewBase(objectToView, targets, duration ) {
+
+				TWEEN.removeAll();
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+					if(objectToView == i)
+					{
+						var object = objects[ i ];
+						var target = targets[ i ];
+
+						new TWEEN.Tween( object.position )
+							.to( { x: objects[0].position.x+1000, y: objects[0].position.y-350, z: target.position.z }, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+
+						new TWEEN.Tween( object.rotation )
+							.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+					}
+					else
+					{
+						var object = objects[ i ];
+						var target = targets[ i ];
+
+						new TWEEN.Tween( object.position )
+							.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+
+						new TWEEN.Tween( object.rotation )
+							.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+							.easing( TWEEN.Easing.Exponential.InOut )
+							.start();
+					}
+				}
+
+				new TWEEN.Tween( this )
+					.to( {}, duration * 2 )
+					.onUpdate( render )
+					.start();
+			}
+
+			function removeAllEntity(){
+	            for ( var i = scene.children.length - 1; i >= 0 ; i -- ) {
+	                obj = scene.children[ i ];
+	                scene.remove(obj);
+	            }
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				TWEEN.update();
+
+				controls.update();
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+</div>
